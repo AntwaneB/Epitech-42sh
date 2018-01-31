@@ -1,0 +1,29 @@
+// Segfault si on a un symbole ">>" (ou autre) au début de la ligne de commande
+// Segfault avec une ligne qui n'a que des espaces
+// Problème si on a pas d'espace avant ou après une redirection
+// env -u
+// env -i
+// segfault si on fait juste entrer avec ligne vide
+// update env_tab sur setenv et unsetenv (et le path aussi)
+// bug avec les statiques en cas de plusieurs redirections gauche
+// ? gérer le ;
+// double redirection gauche
+// ne pas créer une nouvelle variable d'env si une avec le même nom existe déjà
+// cd -
+// Valeur de retour de exit
+// Combiner double redirection gauche avec setpgid
+// supprimer une variable : unset mavar
+// Combiner les options de echo "-ne" ...
+// "caca | pwd" : pas de message d'erreur pour caca et exec le pwd
+// Marche pas sans espace avant une redirection
+// Variables d'environnement & faire attention aux variables locales avec des noms de variables d'environnement
+// Executer les fils dans un autre process group et catch la valeur de retour avec wait
+// Inclure ernno.h PARTOUT
+
+Combiner builtins et commandes
+Revérifier que la ligne de commande est bien valide après remplacement des variables et des alias
+free les variables
+Utiliser get_next_line quand on a pas $TERM (pas check si l'env vaut null)
+
+INVALID CHIASSE :
+- '"    "'

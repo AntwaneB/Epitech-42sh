@@ -1,0 +1,65 @@
+/*
+** main.c for mysh2 in /home/buchse_a/Documents/PSU_2013_minishell2/v2
+**
+** Made by Antoine Buchser
+** Login   <buchse_a@epitech.net>
+**
+** Started on  Thu Feb  6 13:11:17 2014 Antoine Buchser
+** Last update Thu May 22 11:59:34 2014 Antoine Buchser
+*/
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <signal.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <errno.h>
+#include "../my.h"
+#include "../mysh.h"
+#include "../macros.h"
+
+int	multipipe_line(t_sh *sh, t_cl *cmd, int read_fd)
+{
+  int	pid;
+  int	ret;
+  int	pipefds[2];
+
+  if (cmd)
+    {
+      if (cmd->separator && is_pipe(cmd->separator))
+	{
+	  if (pipe(pipefds) == -1)
+	    return (my_perrorcmd("pipe", NULL));
+	}
+      else
+	reset_pipefds(pipefds);
+      if ((cmd->status = get_fds(sh, cmd, pipefds, &read_fd)) != 0)
+	return (0);
+      pid = 0;
+      if (!is_builtin(sh, cmd) && ((pid = fork()) == -1))
+	return (my_perrorcmd("fork", NULL));
+      if (pid == 0)
+	{
+	  if (!is_builtin(sh, cmd))
+	    {
+	      setpgid(0, 0);
+	      XSIGNAL(SIGTTOU, SIG_IGN);
+	      if (tcsetpgrp(STDIN_FILENO, getpgrp()) == -1)
+		return (my_perrorcmd("tcsetpgrp", NULL));
+	      XSIGNAL(SIGINT, SIG_DFL);
+	    }
+	  if (!is_builtin(sh, cmd))
+	    close_pipefds(pipefds[0], 0);
+	  if ((ret = proceed_exec(sh, cmd, read_fd, pipefds[1])) != 0)
+	    return (ret);
+	}
+      close_pipefds(pipefds[1], 1);
+      if (cmd && cmd->separator && is_pipe(cmd->separator))
+	multipipe_line(sh, cmd->next, pipefds[0]);
+      cmd->pid = pid;
+    }
+  return (0);
+}

@@ -1,0 +1,67 @@
+/*
+** main.c for mysh2 in /home/buchse_a/Documents/PSU_2013_minishell2/v2
+** 
+** Made by Antoine Buchser
+** Login   <buchse_a@epitech.net>
+** 
+** Started on  Thu Feb  6 13:11:17 2014 Antoine Buchser
+** Last update Mon Apr 28 09:48:14 2014 Thomas MORITZ
+*/
+
+#include <stdlib.h>
+#include <stdio.h>
+#include "my.h"
+#include "mysh.h"
+#include "get_next_line.h"
+
+static int	is_space(char c)
+{
+  return ((c == ' ' || c == '\t') ? 1 : 0);
+}
+
+static int	count_chars(char *str)
+{
+  int		i;
+  int		chars;
+
+  chars = 0;
+  i = 0;
+  while (str && str[i])
+    {
+      if (!is_space(str[i]))
+	chars++;
+      if (i > 0 && is_space(str[i])
+	  && !is_space(str[i - 1]))
+	chars++;
+      i++;
+    }
+  if (is_space(str[i - 1]))
+    chars--;
+  return (chars);
+}
+
+char	*epur_str(char *str)
+{
+  char	*dest;
+  int	i;
+  int	j;
+  int	strlen;
+
+  strlen = count_chars(str);
+  if ((dest = malloc((strlen + 1) * sizeof(dest))) == NULL)
+    return (NULL);
+  j = -1;
+  i = 0;
+  while (str && str[i] && j < strlen)
+    {
+      if (!is_space(str[i]))
+	dest[++j] = str[i];
+      if (i > 0 && is_space(str[i])
+	  && !is_space(str[i - 1]))
+	dest[++j] = ' ';
+      i++;
+    }
+  dest[(is_space(str[i - 1])) ? j : j + 1] = '\0';
+  free(str);
+  return (dest);
+}

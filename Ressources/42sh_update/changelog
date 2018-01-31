@@ -1,0 +1,85 @@
+DONE | NAME
+---------------------------------------
+YES  | main.c
+-----|---->/*showmylist*/
+-----|----->Aucune dépendance trouvée
+---------------------------------------
+YES  | command_line/cl_free.c
+YES  | command_line/cl_global.c
+YES  | command_line/cl_global2.c
+-----|---->rm is_c_separator
+-----|----->Dispo dans cl_global.c
+-----|---->rm fichier
+YES  | command_line/cl_handle.c
+YES  | command_line/cl_handle_env_rm.c
+YES  | command_line/cl_is_valid.c
+YES  | command_line/cl_lists.c
+YES  | command_line/cl_to_list.c
+YES  | command_line/cl_to_list2.c
+-----|---->Renommé en cl_redir.c
+YES  | command_line/epur_command_line.c
+---------------------------------------
+YES  | environment/env_lists.c
+-----|---->Renommé en env_data.c
+-----|---->rm env_show_list
+-----|----->Dispo dans env_infos.c
+YES  | environment/env_lists2.c
+-----|---->Renommé en env_infos.c
+YES  | environment/env_to_list.c
+YES  | environment/env_list_to_tab.c
+---------------------------------------
+YES  | path/path_to_tab.c
+YES  | path/path_global.c
+---------------------------------------
+YES  | exec/my_execve.c
+YES  | exec/my_execve2.c
+-----|---->Renommé en my_exec_father.c
+-----|---->Comment dans proceed_father
+YES  | exec/get_fds.c
+YES  | exec/count_pipes.c
+YES  | exec/double_left.c
+YES  | exec/print_wait_status.c
+---------------------------------------
+YES  | builtins/is_builtin.c
+YES  | builtins/handle_builtin.c
+YES  | builtins/handle_exit.c
+YES  | builtins/handle_unsetenv.c
+YES  | builtins/handle_setenv.c
+YES  | builtins/handle_env.c
+YES  | builtins/handle_cd.c
+YES  | builtins/handle_alias.c
+YES  | builtins/handle_unalias.c
+YES  | builtins/handle_echo.c
+YES  | builtins/handle_unset.c
+---------------------------------------
+YES  | alias/ali_handle.c
+YES  | alias/ali_lists.c
+-----|---->rm ali_remove
+-----|---->rm ali_free_one_list_elem
+-----|----->Dispo dans ali_remove.c
+YES  | alias/ali_lists2.c
+-----|---->Renommé en ali_remove.c
+---------------------------------------
+YES  | variables/var_handle.c
+YES  | variables/var_lists.c
+-----|---->rm var_remove
+-----|---->rm var_free_one_list_elem
+-----|----->Dispo dans var_remove.c
+YES  | variables/var_lists2.c
+-----|---->Renommé en var_remove.c
+YES  | variables/is_variable.c
+YES  | variables/var_create.c
+---------------------------------------
+YES  | termcap/history.c
+-----|---->DAFUK my_terminal(void)?
+YES  | termcap/my_key.c
+YES  | termcap/terminal.c
+YES  | termcap/windows.c
+-----|---->DAFUK my_putc?
+-----|----->Y U NO my_putchar?
+-----|----->Lien avec tputs?
+---------------------------------------
+YES  | misc.c
+YES  | errors.c
+YES  | wordtab.c
+YES  | my_explode_quotes.c

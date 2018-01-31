@@ -1,0 +1,17 @@
+<shell_config>
+  <list type="shell">
+    <name>"NAME_SHELL"</name>
+    <prompt>"$PWD>"</prompt>
+  </list>
+  <list type="alias">
+    <alias
+	name="ne"
+	value="emacs -nw"/>
+    <alias
+	name="ls"
+	value="ls --color"/>
+    <alias
+	name="ll"
+	value="ls -l"/>
+  </list>
+</shell_config>

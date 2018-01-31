@@ -1,0 +1,74 @@
+/*
+** main.c for mysh2 in /home/buchse_a/Documents/PSU_2013_minishell2/v2
+**
+** Made by Antoine Buchser
+** Login   <buchse_a@epitech.net>
+**
+** Started on  Thu Feb  6 13:11:17 2014 Antoine Buchser
+** Last update Thu May 22 11:56:56 2014 Antoine Buchser
+*/
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <signal.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <errno.h>
+#include "../my.h"
+#include "../mysh.h"
+#include "../macros.h"
+
+static int	execute_non_pipe(t_sh *sh, t_cl *tmp)
+{
+  if (tmp
+      && (!(tmp->prev)
+	  || (tmp->prev && tmp->prev->separator
+	      && is_and(tmp->prev->separator)
+	      && tmp->prev->status == 0)
+	  || (tmp->prev && tmp->prev->separator
+	      && is_or(tmp->prev->separator)
+	      && tmp->prev->status != 0)
+	  || (tmp->prev && tmp->prev->separator
+	      && is_semicol(tmp->prev->separator))))
+    return (1);
+  else
+    return (0);
+}
+
+int	execute_type(t_sh *sh, t_cl **tmp)
+{
+  int	ret;
+
+  if (*tmp && (*tmp)->separator && is_pipe((*tmp)->separator))
+    {
+      if ((ret = multipipe_line(sh, *tmp, 0)) != 0)
+	return (ret);
+      while (*tmp && (is_pipe((*tmp)->separator)
+		      || is_pipe((*tmp)->prev->separator)))
+	{
+	  printf("Waiting for %s\n", (*tmp)->cl[0]);
+	  if (!is_builtin(sh, *tmp) && (*tmp)->status != -1)
+	    XWPID((*tmp)->pid, &((*tmp)->status));
+	  printf("Waitance for %s ended\n", (*tmp)->cl[0]);
+	  if ((*tmp)->status != 0 && !is_builtin(sh, *tmp))
+	    print_wait_status(sh, (*tmp)->status);
+	  (*tmp) = (*tmp)->next;
+	}
+    }
+  else if (execute_non_pipe(sh, *tmp))
+    {
+      if ((ret = multipipe_line(sh, *tmp, 0)) != 0)
+	return (ret);
+      if (!is_builtin(sh, *tmp) && (*tmp)->status != -1)
+	XWPID((*tmp)->pid, &((*tmp)->status));
+      if ((*tmp)->status != 0 && !is_builtin(sh, *tmp))
+	print_wait_status(sh, (*tmp)->status);
+      (*tmp) = (*tmp)->next;
+    }
+  else
+    (*tmp) = (*tmp)->next;
+  return (0);
+}

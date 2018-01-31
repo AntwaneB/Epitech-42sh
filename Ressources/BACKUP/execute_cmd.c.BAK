@@ -1,0 +1,130 @@
+/*
+** main.c for mysh2 in /home/buchse_a/Documents/PSU_2013_minishell2/v2
+**
+** Made by Antoine Buchser
+** Login   <buchse_a@epitech.net>
+**
+** Started on  Thu Feb  6 13:11:17 2014 Antoine Buchser
+** Last update Wed May 14 17:22:15 2014 Antoine Buchser
+*/
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <signal.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <errno.h>
+#include "../my.h"
+#include "../mysh.h"
+#include "../macros.h"
+
+void	proceed_exec(t_sh *sh, t_cl *cmd,
+		     int read_fd, int write_fd)
+{
+  if (dup2(read_fd, STDIN_FILENO) == -1)
+    my_error("dup2() failed.\n");
+  if (dup2(write_fd, STDOUT_FILENO) == -1)
+    my_error("dup2() failed.\n");
+  if (cmd->readfrom && cmd->readtype == 2)
+    get_double_left(cmd, 0, 0);
+  my_execve(sh, cmd);
+  exit(0);
+}
+
+void	get_fds(t_sh *sh, t_cl *cmd, int *pipefds, int *read_fd)
+{
+  int	flags;
+  int	pipeldr[2];
+
+  if (cmd->writeto)
+    {
+      flags = (cmd->writetype == 2) ? O_WRONLY | O_APPEND | O_CREAT
+	: O_WRONLY | O_TRUNC | O_CREAT;
+      if ((pipefds[1] = open(cmd->writeto, flags,
+			     S_IRUSR | S_IWUSR | S_IROTH)) == -1)
+	my_error("open() failed.\n");
+    }
+  if (cmd->readfrom)
+    {
+      if (cmd->readtype == 2)
+	{
+	  if (pipe(pipeldr) == -1)
+	    my_error("pipe() failed.\n");
+	  *read_fd = pipeldr[0];
+	  get_double_left(cmd, 1, pipeldr[1]);
+	}
+      else
+	if ((*read_fd = open(cmd->readfrom, O_RDONLY,
+			     S_IRUSR | S_IRGRP)) == -1)
+	  my_error("open() failed.\n");
+    }
+}
+void	multipipe_line(t_sh *sh, t_cl *cmd, int read_fd)
+{
+  int	pid;
+  int	pipefds[2];
+
+  if (cmd)
+    {
+      if (cmd->separator && is_pipe(cmd->separator))
+	{
+	  if (pipe(pipefds) == -1)
+	    my_error("pipe() failed.\n");
+	}
+      else
+	reset_pipefds(pipefds);
+      get_fds(sh, cmd, pipefds, &read_fd);
+      if ((pid = fork()) == -1)
+	my_error("fork() failed.\n");
+      if (pid == 0)
+	{
+	  close_pipefds(pipefds[0], 0);
+	  proceed_exec(sh, cmd, read_fd, pipefds[1]);
+	}
+      close_pipefds(pipefds[1], 1);
+      multipipe_line(sh, cmd->next, pipefds[0]);
+      cmd->pid = pid;
+    }
+}
+
+void	init_pipeline(t_sh *sh, t_cl *tmp)
+{
+  setpgid(0, 0);
+  XSIGNALQ(SIGTTOU, SIG_IGN);
+  if (tcsetpgrp(STDIN_FILENO, getpgrp()) == -1)
+    my_error("tcsetpgrp() failed.\n");
+  XSIGNALQ(SIGINT, SIG_DFL);
+  multipipe_line(sh, tmp, 0);
+  tmp = sh->cl->first;
+  while (tmp)
+    {
+      if (waitpid(tmp->pid, &(tmp->status), 0) == -1)
+	my_error("waitpid() failed.\n");
+      if (tmp->status != 0)
+	exit(-1);
+      tmp = tmp->next;
+    }
+  exit(0);
+}
+
+int	execute_cmd(t_sh *sh)
+{
+  t_cl	*tmp;
+  int	pid;
+  int	status;
+
+  tmp = sh->cl->first;
+  if ((pid = fork()) == -1)
+    return (my_perror(NULL));
+  else if (pid == 0)
+    init_pipeline(sh, tmp);
+  if (wait(NULL) == -1)
+    return (my_perror(NULL));
+  XSIGNAL(SIGTTOU, SIG_IGN);
+  if (tcsetpgrp(STDIN_FILENO, getpgrp()) == -1)
+    return (my_perror(NULL));
+  return (0);
+}
